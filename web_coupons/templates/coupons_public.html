@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Купоны — {{session.name}}{% endblock %}
+{% block body_class %}pub{% endblock %}
+
+{% block body %}
+<style>
+#clist.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.pcard{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:transform .12s ease,box-shadow .12s ease}
+.pcard:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:#e3e6ec}
+.pcard .pimg{width:100%;height:auto;display:block;background:#f2f3f5;object-fit:contain}
+.pcard .pimg.empty{aspect-ratio:16/10}
+.pcard .pbody{padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.pcard .pttl{font-weight:700;letter-spacing:-.01em;line-height:1.3}
+.pcard .pcap{color:var(--muted);font-size:12.5px;word-break:break-word}
+.pcard .badge{align-self:flex-start}
+@media (max-width:560px){
+#clist.cgrid{grid-template-columns:1fr}
+}
+</style>
+<div class='header'>
+  <div class='inner'>
+    <a class='brand' href='/s/{{session.id}}/card' style='text-decoration:none'>
+      <span class='logo'>B</span>
+      <span>Bristol<small>Купоны · {{session.name}}</small></span>
+    </a>
+    <span class='spacer'></span>
+    <a class='btn sm ghost' href='/s/{{session.id}}/card'>Карта</a>
+  </div>
+</div>
+
+<div class='wrap' style='max-width:760px'>
+  <div class='card' style='padding:16px 20px'>
+    <div class='sectionhead' style='margin:0'>
+      <h2>Мои купоны</h2>
+      <span class='count'>{{ bristol_coupons|length }}</span>
+      <span class='spacer'></span>
+      <input id='csearch' placeholder='Поиск' style='max-width:220px'>
+    </div>
+  </div>
+
+  {% if bristol_coupons %}
+  <div class='cgrid mt2' id='clist'>
+    {% for c in bristol_coupons %}
+    <a class='pcard' data-search='{{c.number}} {{c.universal_coupon}}' href='/s/{{session.id}}/b/{{c.number}}'>
+      {% if c.image_url %}<img class='pimg' src='{{c.image_url}}' loading='lazy' onerror="this.style.visibility='hidden'">{% else %}<div class='pimg empty'></div>{% endif %}
+      <div class='pbody'>
+        <div class='pttl'>{{ c.title or c.universal_coupon or c.number }}</div>
+        <div class='pcap'><span class='mono'>{{ c.number }}</span>{% if c.actual_end %} · до {{ c.actual_end[:10] }}{% endif %}</div>
+        <span class='badge red'>Показать QR</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class='card mt2'><div class='empty'>Купонов нет или они ещё не синхронизированы.</div></div>
+  {% endif %}
+
+  {% if coupons %}
+  <div class='card mt2'>
+    <div class='sectionhead'><h2>Подарочные купоны</h2></div>
+    <div class='list'>
+      {% for c in coupons %}
+      <div class='item'>
+        <div class='grow'>
+          <div class='ttl mono'>{{ c.code }}</div>
+          <div class='cap'>{{ c.value }} · {{ c.note or '' }}</div>
+        </div>
+        <a class='btn sm success' href='/s/{{session.id}}/coupon/{{c.code}}' onclick="return confirm('Получить купон {{c.code}}?')">Получить</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+var q=document.getElementById('csearch');
+if(q){ q.addEventListener('input', function(){
+  var v=this.value.toLowerCase().trim();
+  document.querySelectorAll('#clist .pcard').forEach(function(el){
+    var hay=(el.dataset.search||'').toLowerCase();
+    el.style.display=(!v||hay.indexOf(v)>=0)?'':'none';
+  });
+});}
+</script>
+{% endblock %}

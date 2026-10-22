@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Купон — {{session.name}}{% endblock %}
+{% block body_class %}pub{% endblock %}
+
+{% block body %}
+<div class='share'>
+  <div style='width:100%;max-width:460px;text-align:center'>
+    {% if coupon.image_url %}
+    <img src='{{ coupon.image_url }}' alt='Купон' style='display:block;width:100%;border-radius:16px' onerror="this.style.display='none'">
+    {% endif %}
+
+    <img src='/s/{{session.id}}/b/{{coupon.number}}/qr.png' alt='DataMatrix купона'
+         style='display:block;width:100%;max-width:320px;margin:16px auto 0;background:#fff;border-radius:16px'>
+
+    {% if coupon.actual_end %}
+    <div style='margin-top:16px;font-size:16px;font-weight:700'>Действует до {{ coupon.actual_end[:10] }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
